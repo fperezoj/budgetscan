@@ -242,14 +242,34 @@ function App() {
     ),
     scanResult&&card({},
       div({display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14},
-        div({},div({fontSize:16,fontWeight:600},scanResult.store||"Comercio"),div({fontSize:12,color:"#64748b",marginTop:2},scanResult.date)),
+        div({},div({fontSize:16,fontWeight:600},scanResult.store||"Comercio"),
+          div({display:"flex",alignItems:"center",gap:8,marginTop:4},
+            e("span",{style:{fontSize:12,color:"#64748b"}},"📅 Fecha:"),
+            e("input",{
+              type:"date",
+              value:scanResult.date||new Date().toISOString().split("T")[0],
+              onChange:ev=>setScanResult(p=>({...p,date:ev.target.value})),
+              style:{background:"#0f172a",border:"1px solid #334155",color:"#e2e8f0",
+                padding:"4px 8px",borderRadius:6,fontSize:13,cursor:"pointer"}
+            })
+          )
+        ),
         div({fontSize:22,fontWeight:700,color:"#6366f1"},fmt(scanResult.total))
       ),
       ...(scanResult.items||[]).map((it,i)=>div({key:i,display:"flex",justifyContent:"space-between",alignItems:"center",padding:"8px 0",borderBottom:"1px solid #0f172a"},
-        div({},div({fontSize:13},it.name),e("span",{style:{fontSize:11,background:"#312e81",color:"#a5b4fc",padding:"2px 8px",borderRadius:10}},it.category)),
-        div({fontWeight:600},fmt(it.amount))
+        div({flex:1},
+          div({fontSize:13,marginBottom:4},it.name),
+          e("select",{
+            value:it.category,
+            onChange:ev=>setScanResult(p=>({...p,items:p.items.map((x,j)=>j===i?{...x,category:ev.target.value}:x)})),
+            style:{background:"#312e81",color:"#a5b4fc",border:"1px solid #4338ca",padding:"3px 8px",
+              borderRadius:10,fontSize:11,cursor:"pointer",outline:"none"}
+          },...CATS.map(cat=>e("option",{key:cat,value:cat},cat)))
+        ),
+        div({fontWeight:600,marginLeft:12},fmt(it.amount))
       )),
-      div({display:"flex",gap:10,marginTop:14},
+      div({fontSize:11,color:"#475569",marginTop:10,marginBottom:4},"⚠️ Verifica la fecha antes de confirmar — si la IA no pudo leerla, corrígela aquí."),
+      div({display:"flex",gap:10,marginTop:8},
         btn("✅ Confirmar",confirmReceipt,"#10b981",{flex:1}),
         btn("❌ Cancelar",()=>setScanResult(null),"#ef4444",{flex:1})
       )
